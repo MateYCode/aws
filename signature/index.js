@@ -2,14 +2,14 @@ const policy = require('./policy.json');
 const crypto = require('crypto');
 const { AssumeRoleCommand, STSClient } = require('@aws-sdk/client-sts');
 
-const region = "us-east-1";
+const region = "us-west-2";
 const client = new STSClient({ region });
 
 (async () => {
 
 	try {
 		const command = new AssumeRoleCommand({
-			RoleArn: 'arn:aws:iam::123456789012:role/DelegatorRole',
+			RoleArn: '',
 			RoleSessionName: 'DelegatedSession',
 			DurationSeconds: 900,
 		});
@@ -34,7 +34,7 @@ const client = new STSClient({ region });
 		const signature = crypto.createHmac('sha256', signingKey).update(stringToSign).digest('hex');
 		
 		console.log('This is the accessKeyId: ', accessKeyId, '\n');
-		console.log('signature', signature);
+		console.log('This is the signature', signature);
 
 	} catch (error) {
 		console.error('Oops! Something went wrong.', error);

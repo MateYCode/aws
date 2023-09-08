@@ -9,7 +9,7 @@
     {"x-amz-server-side-encryption": "AES256"},
     ["starts-with", "$x-amz-meta-tag", ""],
 
-    {"x-amz-credential": "{accessId}/20230908/us-east-1/s3/aws4_request"},
+    {"x-amz-credential": "{accessId}/20230908/us-west-2/s3/aws4_request"},
     {"x-amz-algorithm": "AWS4-HMAC-SHA256"},
     {"x-amz-date": "20230908T000000Z" }
   ]
