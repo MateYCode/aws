@@ -52,7 +52,7 @@ module.exports.buildBase64Policy = buildBase64Policy;
 		const signature = crypto.createHmac('sha256', signingKey).update(stringToSign).digest('hex');
 
 		console.log('This is the accessKeyId: ', accessKeyId, '\n');
-		console.log('This is the sessionToken', sessionToken);
+		console.log('This is the sessionToken', sessionToken, '\n');
 		console.log('This is the signature', signature);
 
 	} catch (error) {

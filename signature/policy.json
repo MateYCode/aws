@@ -2,7 +2,6 @@
   "conditions": [
     {"bucket": "xhub-homepim-dev"},
     ["starts-with", "$key", "files/"],
-    {"acl": "public-read"},
     {"success_action_redirect": "http://google.com"},
     ["starts-with", "$Content-Type", "image/"],
     {"x-amz-meta-uuid": "14365123651274"},
