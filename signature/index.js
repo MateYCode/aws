@@ -8,7 +8,11 @@ const client = new STSClient({ region });
 function buildBase64Policy({ accessKeyId, date, sessionToken }) {
 	if (!(accessKeyId && date && sessionToken)) throw new Error('Missing credentials');
 
-	// We update the policy before converting it to base64
+	// We set the policy expiration to one hour from the current time
+	const currentJsDate = new Date();
+	policy.expiration = new Date(currentJsDate.getTime() + 60 * 60 * 1000).toISOString();
+
+	// We update the policy conditions
 	const credentialObj = policy.conditions.find(condition => condition["x-amz-credential"]);
 	credentialObj["x-amz-credential"] = credentialObj["x-amz-credential"].replace(/{accessId}/, accessKeyId);
 	credentialObj["x-amz-credential"] = credentialObj["x-amz-credential"].replace(/{date}/, date);
@@ -25,23 +29,25 @@ function buildBase64Policy({ accessKeyId, date, sessionToken }) {
 
 module.exports.buildBase64Policy = buildBase64Policy;
 
+async function getCredentials() {
+	const command = new AssumeRoleCommand({
+		RoleArn: process.env.AWSROLE,
+		RoleSessionName: 'DelegatedSession',
+		DurationSeconds: 1800,
+	});
+	const response = await client.send(command)
+
+	const { AccessKeyId: accessKeyId, SecretAccessKey: secretAccessKey, SessionToken: sessionToken } = response.Credentials;
+	return { accessKeyId, secretAccessKey, sessionToken };
+}
+
 (async () => {
 
 	try {
-		const command = new AssumeRoleCommand({
-			RoleArn: process.env.AWSROLE,
-			RoleSessionName: 'DelegatedSession',
-			DurationSeconds: 1800,
-		});
-		const response = await client.send(command)
+		const { accessKeyId, secretAccessKey, sessionToken } = await getCredentials();
 
-		const accessKeyId = response.Credentials.AccessKeyId;
-		const secretAccessKey = response.Credentials.SecretAccessKey;
-		const sessionToken = response.Credentials.SessionToken
-
-		const today = new Date();
-		const date = today.toISOString().split('T')[0].replace(/-/g, '');
-
+		//js date to yyyymmdd
+		const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
 		const stringToSign = buildBase64Policy({ accessKeyId, date, sessionToken });
 
 		const service = 's3';
