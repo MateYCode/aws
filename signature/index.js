@@ -5,6 +5,26 @@ const { AssumeRoleCommand, STSClient } = require('@aws-sdk/client-sts');
 const region = "us-west-2";
 const client = new STSClient({ region });
 
+function buildBase64Policy({ accessKeyId, date, sessionToken }) {
+	if (!(accessKeyId && date && sessionToken)) throw new Error('Missing credentials');
+
+	// We update the policy before converting it to base64
+	const credentialObj = policy.conditions.find(condition => condition["x-amz-credential"]);
+	credentialObj["x-amz-credential"] = credentialObj["x-amz-credential"].replace(/{accessId}/, accessKeyId);
+	credentialObj["x-amz-credential"] = credentialObj["x-amz-credential"].replace(/{date}/, date);
+
+	const securityObj = policy.conditions.find(condition => condition["x-amz-security-token"]);
+	securityObj["x-amz-security-token"] = securityObj["x-amz-security-token"].replace(/{sessionToken}/, sessionToken);
+
+	const dateObj = policy.conditions.find(condition => condition["x-amz-date"]);
+	dateObj["x-amz-date"] = dateObj["x-amz-date"].replace(/{date}/, date);
+
+	// We create a base64 string from the policy
+	return btoa(JSON.stringify(policy));
+}
+
+module.exports.buildBase64Policy = buildBase64Policy;
+
 (async () => {
 
 	try {
@@ -22,19 +42,7 @@ const client = new STSClient({ region });
 		const today = new Date();
 		const date = today.toISOString().split('T')[0].replace(/-/g, '');
 
-		// We update the policy before converting it to base64
-		const credentialObj = policy.conditions.find(condition => condition["x-amz-credential"]);
-		credentialObj["x-amz-credential"] = credentialObj["x-amz-credential"].replace(/{accessId}/, accessKeyId);
-		credentialObj["x-amz-credential"] = credentialObj["x-amz-credential"].replace(/{date}/, date);
-
-		const securityObj = policy.conditions.find(condition => condition["x-amz-security-token"]);
-		securityObj["x-amz-security-token"] = securityObj["x-amz-security-token"].replace(/{sessionToken}/, sessionToken);
-		
-		const dateObj = policy.conditions.find(condition => condition["x-amz-date"]);
-		dateObj["x-amz-date"] = dateObj["x-amz-date"].replace(/{date}/, date);
-		
-		// We create a base64 string from the policy
-		const stringToSign = btoa(JSON.stringify(policy));
+		const stringToSign = buildBase64Policy({ accessKeyId, date, sessionToken });
 
 		const service = 's3';
 		const dateKey = crypto.createHmac('sha256', `AWS4${secretAccessKey}`).update(date).digest();
