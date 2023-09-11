@@ -26,7 +26,7 @@ const client = new STSClient({ region });
 		// We create a base64 string from the policy
 		const stringToSign = btoa(JSON.stringify(policy));
 
-		const date = '20230908';
+		const date = '20230911';
 		const service = 's3';
 		const dateKey = crypto.createHmac('sha256', `AWS4${secretAccessKey}`).update(date).digest();
 		const dateRegionKey = crypto.createHmac('sha256', dateKey).update(region).digest();
