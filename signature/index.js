@@ -9,7 +9,7 @@ const client = new STSClient({ region });
 
 	try {
 		const command = new AssumeRoleCommand({
-			RoleArn: '',
+			RoleArn: process.env.AWSROLE,
 			RoleSessionName: 'DelegatedSession',
 			DurationSeconds: 1800,
 		});
@@ -19,14 +19,19 @@ const client = new STSClient({ region });
 		const secretAccessKey = response.Credentials.SecretAccessKey;
 		const sessionToken = response.Credentials.SessionToken
 
-		// We update the x-amz-credential in the policy, passing the current access id 
+		const today = new Date();
+		const date = today.toISOString().split('T')[0].replace(/-/g, '');
+
+		// We update the policy before converting it to base64
 		const credentialObj = policy.conditions.find(condition => condition["x-amz-credential"]);
 		credentialObj["x-amz-credential"] = credentialObj["x-amz-credential"].replace(/{accessId}/, accessKeyId);
-
+		credentialObj["x-amz-credential"] = credentialObj["x-amz-credential"].replace(/{date}/, date);
+		credentialObj["x-amz-security-token"] = credentialObj["x-amz-credential"].replace(/{sessionToken}/, sessionToken);
+		credentialObj["x-amz-date"] = credentialObj["x-amz-credential"].replace(/{date}/, date);
+		
 		// We create a base64 string from the policy
 		const stringToSign = btoa(JSON.stringify(policy));
 
-		const date = '20230911';
 		const service = 's3';
 		const dateKey = crypto.createHmac('sha256', `AWS4${secretAccessKey}`).update(date).digest();
 		const dateRegionKey = crypto.createHmac('sha256', dateKey).update(region).digest();
