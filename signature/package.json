@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start":"node index.js"
+    "start": "node index.js",
+    "policyToBase64": "node policy_base64.js"
   },
   "author": "",
   "license": "ISC",
