@@ -2,8 +2,8 @@
   "conditions": [
     {"bucket": "xhub-homepim-dev"},
     ["starts-with", "$key", "files/"],
-    {"success_action_redirect": "http://google.com"},
-    ["starts-with", "$Content-Type", "image/"],
+    {"success_action_redirect": "https://www.dolby.com/"},
+    ["starts-with", "$Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
     {"x-amz-meta-uuid": "14365123651274"},
     {"x-amz-server-side-encryption": "AES256"},
     ["starts-with", "$x-amz-meta-tag", ""],
